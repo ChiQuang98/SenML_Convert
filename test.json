@@ -1,0 +1,30 @@
+{
+  "id": 2,
+  "opcode": 161,
+  "data":[
+    {
+      "id": 1234,
+      "enable": 12,
+      "name": "ChiQuang1",
+      "type": 234,
+      "state": 23,
+      "value": 21,
+      "threshold": [
+
+      ],
+      "ctime": 135
+    },
+    {
+      "id": 1234,
+      "enable": 12,
+      "name": "ChiQuang2",
+      "type": 234,
+      "state": 23,
+      "value": 21,
+      "threshold": [
+
+      ],
+      "ctime": 135
+    }
+  ]
+}
