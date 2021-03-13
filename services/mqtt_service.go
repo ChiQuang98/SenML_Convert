@@ -4,6 +4,7 @@ import (
 	"SenML_cv/base"
 	"SenML_cv/settings"
 	"encoding/json"
+	"errors"
 	"fmt"
 	_ "github.com/cisco/senml"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -18,6 +19,30 @@ var mqttClient MQTT.Client
 func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error){
 	switch op_code {
 	case base.OPU_GENERIC:
+		fmt.Println("IN OPU_GENERIC")
+		var generic *base.OPUGeneric = obj.(*base.OPUGeneric)
+		volumn := float64(generic.Volume)
+		timeLong:= (time.Now().Unix())
+		entry :=gosenml.Entry{
+			Name:         strconv.FormatInt(mcu_id, 10),
+			Units:        "sound",
+			Value:        &volumn,
+			//StringValue:  &generic.FirmwareVersion,
+			Time:         timeLong,
+		}
+
+		msg := gosenml.NewMessage(entry)
+		err := msg.Validate()
+		msg.BaseTime = timeLong
+		msg.BaseName = "Generic"
+		if err!=nil{
+			return "",err
+		}
+		encoder := gosenml.NewJSONEncoder()
+		rsString,_ := encoder.EncodeMessage(msg)
+		fmt.Println(string(rsString))
+		return string(rsString),nil
+
 		break
 	case base.OPU_SENSOR:
 		fmt.Println("ConvertJsonToSenML_InSensor")
@@ -25,11 +50,14 @@ func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error
 		fmt.Println(len(sensors))
 		entries :=make([] gosenml.Entry,0)
 		var m1 *gosenml.Message
+		if len(sensors) == 0{
+			return "", errors.New("Number of Array sensor is 0")
+		}
 		for _,sensor:=range sensors{
 			v := float64(sensor.Value)
 			e :=gosenml.Entry{
 				Name:  strconv.FormatInt(mcu_id, 10),
-				Units: "degC",
+				Units: "sensorU",
 				Time: sensor.CreatedTime,
 				Value: &v,
 			}
@@ -40,9 +68,7 @@ func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error
 		m1.BaseName = "http://example.com/"
 		err := m1.Validate()
 		//m1.Version = 2
-		if err ==nil{
-			fmt.Println("Not err")
-		} else{
+		if err != nil{
 			return "",err
 			fmt.Println("err",err.Error())
 		}
@@ -52,7 +78,7 @@ func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error
 		return string(b), nil
 		break
 	}
-	return "",nil
+	return "",errors.New("Wrong ")
 }
 func ConnectMqtt() error {
 	defer func() {
@@ -96,12 +122,14 @@ var onMessage MQTT.MessageHandler= func(client MQTT.Client, msg MQTT.Message) {
 	}
 	switch obj.OpCode {
 	case base.OPU_GENERIC:
+
 		generic := &base.OPUGeneric{}
 		err := json.Unmarshal(obj.Data, generic)
 		if err != nil {
 			glog.Errorf("onMessage/OPU_GENERIC/%d/json.Unmarshal err: %v", obj.Id, err)
 			return
 		}
+		convertJsonToSenML(MCUID,generic,base.OPU_GENERIC)
 		break
 	case base.OPU_CAMERA:
 		cameras := []base.OPUCamera{}
