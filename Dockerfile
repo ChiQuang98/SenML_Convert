@@ -1,5 +1,8 @@
 FROM golang:1.15.10-alpine3.13
 # Set the Current Working Directory inside the container
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
 ENV GOPATH /go
 ENV GOROOT /usr/local/go
 ENV PATH $PATH:/usr/local/go/bin
