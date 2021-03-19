@@ -1,4 +1,4 @@
-FROM golang:1.14
+FROM golang:1.15.10-alpine3.13
 # Set the Current Working Directory inside the container
 ENV GOPATH /go
 ENV GOROOT /usr/local/go
