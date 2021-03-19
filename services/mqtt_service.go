@@ -9,7 +9,6 @@ import (
 	_ "github.com/cisco/senml"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/golang/glog"
-	"github.com/krylovsk/gosenml"
 	"github.com/silkeh/senml"
 	"strconv"
 	"time"
@@ -52,34 +51,34 @@ func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error
 		fmt.Println("ConvertJsonToSenML_InSensor")
 		var sensors []base.OPUSensor = obj.([]base.OPUSensor)
 		fmt.Println(len(sensors))
-		entries :=make([] gosenml.Entry,0)
-		var m1 *gosenml.Message
-		if len(sensors) == 0{
-			return "", errors.New("Number of Array sensor is 0")
-		}
-		for _,sensor:=range sensors{
-			v := float64(sensor.Value)
-			e :=gosenml.Entry{
-				Name:  strconv.FormatInt(mcu_id, 10),
-				Units: "sensorU",
-				Time: sensor.CreatedTime,
-				Value: &v,
-			}
-			entries = append(entries,e)
-			fmt.Println(sensor.Name)
-		}
-		m1=gosenml.NewMessage(entries...)
-		m1.BaseName = "http://example.com/"
-		err := m1.Validate()
-		//m1.Version = 2
-		if err != nil{
-			return "",err
-			fmt.Println("err",err.Error())
-		}
-		encoder := gosenml.NewJSONEncoder()
-		b, _ := encoder.EncodeMessage(m1)
-		fmt.Println(string(b))
-		return string(b), nil
+		//entries :=make([] gosenml.Entry,0)
+		//var m1 *gosenml.Message
+		//if len(sensors) == 0{
+		//	return "", errors.New("Number of Array sensor is 0")
+		//}
+		//for _,sensor:=range sensors{
+		//	v := float64(sensor.Value)
+		//	e :=gosenml.Entry{
+		//		Name:  strconv.FormatInt(mcu_id, 10),
+		//		Units: "sensorU",
+		//		Time: sensor.CreatedTime,
+		//		Value: &v,
+		//	}
+		//	entries = append(entries,e)
+		//	fmt.Println(sensor.Name)
+		//}
+		//m1=gosenml.NewMessage(entries...)
+		//m1.BaseName = "http://example.com/"
+		//err := m1.Validate()
+		////m1.Version = 2
+		//if err != nil{
+		//	return "",err
+		//	fmt.Println("err",err.Error())
+		//}
+		//encoder := gosenml.NewJSONEncoder()
+		//b, _ := encoder.EncodeMessage(m1)
+		//fmt.Println(string(b))
+		//return string(b), nil
 		break
 	}
 	return "",errors.New("Wrong ")
