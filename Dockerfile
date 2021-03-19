@@ -1,6 +1,7 @@
 FROM golang:1.15.10-alpine3.13
 # Set the Current Working Directory inside the container
 RUN apk update
+RUN apt-get install
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git
