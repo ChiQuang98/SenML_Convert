@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	_ "github.com/cisco/senml"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/golang/glog"
 	"github.com/silkeh/senml"
