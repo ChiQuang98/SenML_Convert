@@ -1,0 +1,5 @@
+Log file created at: 2021/03/16 14:10:21
+Running on machine: DESKTOP-A63N2T1
+Binary: Built with gc go1.15.7 for windows/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0316 14:10:21.011673   11584 main.go:35] OK

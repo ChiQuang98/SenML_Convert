@@ -1,7 +1,7 @@
 {
   "MqttInfo": {
-    "ServerAddress": "192.168.193.128",
-    "ServerPort": 1883,
+    "ServerAddress": "10.4.200.197",
+    "ServerPort": 1886,
     "HttpApiPort": 8888
   },
   "KeyAuth": "mykey"

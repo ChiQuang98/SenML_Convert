@@ -10,38 +10,42 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/golang/glog"
 	"github.com/krylovsk/gosenml"
-	_ "github.com/krylovsk/gosenml"
+	"github.com/silkeh/senml"
 	"strconv"
 	"time"
 )
+
 var mqttInfo *settings.MqttInfo =settings.GetMqttInfo()
 var mqttClient MQTT.Client
+func publishMessageSenML(topic string,qos byte, retain bool, msgSenML string) error{
+	token:=mqttClient.Publish(topic,qos,retain,msgSenML)
+	return  token.Error()
+}
 func convertJsonToSenML(mcu_id int64,obj interface{},op_code byte) (string,error){
 	switch op_code {
 	case base.OPU_GENERIC:
 		fmt.Println("IN OPU_GENERIC")
 		var generic *base.OPUGeneric = obj.(*base.OPUGeneric)
+		//rs1,_ := json.Marshal(generic)
+		//strs1 := string(rs1)
+		//fmt.Println(strs1)
+		//fmt.Println((generic))
+		//test1:="sss"
 		volumn := float64(generic.Volume)
-		timeLong:= (time.Now().Unix())
-		entry :=gosenml.Entry{
-			Name:         strconv.FormatInt(mcu_id, 10),
-			Units:        "sound",
-			Value:        &volumn,
-			//StringValue:  &generic.FirmwareVersion,
-			Time:         timeLong,
+		now := time.Now()
+		list := []senml.Measurement{
+			senml.NewValue(strconv.FormatInt(mcu_id,10), volumn, senml.Decibel, now, 0),
+		}
+		//list = append(list, senml.NewValue("sensor:humidity11", 40, "sound", now, 0))
+		//fmt.Print(len(list))
+		data, err := senml.EncodeJSON(list)
+		if err != nil {
+			fmt.Print("Error encoding to JSON:", err)
 		}
 
-		msg := gosenml.NewMessage(entry)
-		err := msg.Validate()
-		msg.BaseTime = timeLong
-		msg.BaseName = "Generic"
-		if err!=nil{
-			return "",err
-		}
-		encoder := gosenml.NewJSONEncoder()
-		rsString,_ := encoder.EncodeMessage(msg)
-		fmt.Println(string(rsString))
-		return string(rsString),nil
+		fmt.Printf("%s\n", data)
+		publishMessageSenML("channels/583d3d82-b590-4577-8409-f601a20e86b9/messages",0,false,string(data))
+		return string(data),nil
 
 		break
 	case base.OPU_SENSOR:
@@ -102,7 +106,7 @@ func ConnectMqtt() error {
 }
 var onConnected MQTT.OnConnectHandler = func(client MQTT.Client) {
 	fmt.Println("connected")
-	if token := client.Subscribe("resultTopic",1,onMessage); token.Wait() && token.Error()!=nil{
+	if token := client.Subscribe("h2/s/#",1,onMessage); token.Wait() && token.Error()!=nil{
 		glog.Error("onConnected/client.Subscribe(resultTopic) err: ", token.Error())
 		return
 	}
@@ -111,7 +115,7 @@ var onConnectionLost MQTT.ConnectionLostHandler = func(client MQTT.Client, reaso
 	glog.Infof("onConnectionLost/server(%s:%d)", mqttInfo.ServerAddress, mqttInfo.ServerPort)
 }
 var onMessage MQTT.MessageHandler= func(client MQTT.Client, msg MQTT.Message) {
-	fmt.Println("INNN")
+	//fmt.Println("INNN")
 	obj := &base.MqttMessagePublish{}
 	err := json.Unmarshal(msg.Payload(), obj)
 	var MCUID int64 = obj.Id
@@ -125,6 +129,7 @@ var onMessage MQTT.MessageHandler= func(client MQTT.Client, msg MQTT.Message) {
 
 		generic := &base.OPUGeneric{}
 		err := json.Unmarshal(obj.Data, generic)
+
 		if err != nil {
 			glog.Errorf("onMessage/OPU_GENERIC/%d/json.Unmarshal err: %v", obj.Id, err)
 			return
