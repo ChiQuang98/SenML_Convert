@@ -1,5 +1,4 @@
-MAINTAINER QuangTC <chiquang1498@gmail.com>
-FROM golang:1.13
+FROM golang:lastest
 WORKDIR /go/src/app
 COPY . .
 ENV GOPATH /go
